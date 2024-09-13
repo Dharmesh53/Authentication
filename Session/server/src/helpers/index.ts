@@ -21,9 +21,5 @@ export const createCSRF = (res: Response) => {
 
   res.clearCookie("X_CSRF_TOKEN_SIGNED", myCookieOptions);
 
-  res
-    .setHeader("Access-Control-Expose-Headers", "X-CSRF-Token, Auth-Response")
-    .setHeader("auth-response", "true")
-    .setHeader("x-csrf-token", csrfToken)
-    .cookie("X_CSRF_TOKEN_SIGNED", signedCsrfToken, myCookieOptions);
+  res.cookie("X_CSRF_TOKEN_SIGNED", signedCsrfToken, myCookieOptions).json({ "X-CSRF-Token": csrfToken });
 };

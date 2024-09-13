@@ -19,11 +19,7 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    const isAuth = response.headers["auth-response"];
-
-    if (isAuth === "true") {
-      CSRF_Token = response.headers["x-csrf-token"];
-    }
+    CSRF_Token = response.data["X-CSRF-Token"];
     return response;
   },
   (error) => {
