@@ -52,7 +52,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem("jwt");
+      localStorage.clear()
       setUser(null);
     } catch (error) {
       console.error("Failed to logout, ", error);

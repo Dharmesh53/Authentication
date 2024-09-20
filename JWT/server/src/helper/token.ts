@@ -1,26 +1,49 @@
 import { privateKey, publicKey } from "helper/keyPairs";
 import jwt from "jsonwebtoken";
+import { JWTData } from "types"
+import { encryptData } from "helper";
 
-export const generateJWT = (user: Record<string, any>) => {
-  const data = {
+export const generateAccessToken = (user: Record<string, any>, exp: string) => {
+
+  const data: JWTData = {
     iss: process.env.X_CURRENT_URL,
     sub: user._id,
     aud: process.env.X_CORS_ORIGIN,
-    exp: Math.floor(Date.now() / 1000) + 60 * 5,
     nbf: Math.floor(Date.now() / 1000),
-    data: { username: user.username, email: user.email },
   };
 
-  const token = jwt.sign(data, privateKey, { algorithm: "RS256" });
-
-  return token;
+  return generateJWT(data, exp);
 };
 
+export const generateRefreshToken = (id: string, exp: string) => {
+  const somethingIDontKnowAbout = encryptData(id)
+
+  const data: JWTData = {
+    iss: process.env.X_CURRENT_URL,
+    sub: somethingIDontKnowAbout,
+    aud: process.env.X_CORS_ORIGIN,
+    nbf: Math.floor(Date.now() / 1000),
+  };
+
+  return generateJWT(data, exp)
+};
+
+export const generateJWT = (data: Record<string, any>, exp: string) => {
+  const token = jwt.sign(data, privateKey, { algorithm: "RS256", expiresIn: exp });
+  return token;
+}
+
 export const verifyJWT = (token: string) => {
-  const user = jwt.verify(token, publicKey, {
-    algorithms: ["RS256"],
-    audience: process.env.X_CORS_ORIGIN,
-    issuer: process.env.X_CURRENT_URL,
-  });
-  return user;
+  try {
+    const decoded = jwt.verify(token, publicKey, {
+      algorithms: ["RS256"],
+      audience: process.env.X_CORS_ORIGIN,
+      issuer: process.env.X_CURRENT_URL,
+    });
+
+    return decoded as JWTData;
+  } catch (error) {
+    console.log(error.message)
+    return null
+  }
 };

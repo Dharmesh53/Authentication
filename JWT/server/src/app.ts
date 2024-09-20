@@ -9,6 +9,8 @@ import cors from "cors";
 import helmet from "helmet";
 import router from "./router";
 
+import { notFoundHandler, errorHandler } from "middlewares/error.middleware";
+
 const app = express();
 
 app.use(
@@ -18,10 +20,17 @@ app.use(
   }),
 );
 app.use(helmet());
+
 app.use(morgan("dev"));
-app.use(compression());
+
 app.use(cookieParser());
 app.use(bodyParser.json());
+
+app.use(compression());
+
 app.use("/api/v1", router);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export const httpServer = createServer(app);
