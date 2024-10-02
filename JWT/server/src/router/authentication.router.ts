@@ -5,6 +5,6 @@ import { isAuthenticated } from "middlewares";
 export default (router: Router, prefix: string) => {
   router.post(prefix + "/register", register);
   router.post(prefix + "/login", login);
-  router.post(prefix + "/logout", isAuthenticated, logout);
+  router.post(prefix + "/logout", logout);
   router.post(prefix + "/refreshToken", getNewAccessToken);
 };

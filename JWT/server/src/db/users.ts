@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true },
+  roles: [{ type: Number, enum: [0, 1, 2] }],
   authentication: {
     salt: { type: String, select: false },
     password: { type: String, required: true, select: false },

@@ -1,9 +1,7 @@
 import { createUser, getUserById, getUsersByEmail } from "db/users";
 import { Request, Response } from "express";
-import { hasher, random, timeSafeEqual, decryptData } from "helper";
-import { generateAccessToken, generateRefreshToken, verifyJWT } from "helper/token";
-import { get } from "lodash";
-import { JWTData, User } from "types";
+import { hasher, random, timeSafeEqual, myCookieOptions } from "helper";
+import { generateAccessToken, generateRefreshToken, getIdFromRefreshToken } from "helper/token";
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -31,7 +29,13 @@ export const login = async (req: Request, res: Response) => {
     user.authentication.refreshToken = refreshToken;
     user.save();
 
-    return res.status(200).json({ id: user._id, username: user.username, email: user.email, accessToken, refreshToken });
+    res.clearCookie("refreshToken", myCookieOptions)
+
+    return res
+      .status(200)
+      .cookie("refreshToken", refreshToken, myCookieOptions)
+      .json({ id: user._id, username: user.username, email: user.email, roles: user.roles, accessToken })
+
   } catch (error) {
     console.log(error);
     return res.status(500).send(`Error -> ${error.message}`);
@@ -57,6 +61,7 @@ export const register = async (req: Request, res: Response) => {
     const user = await createUser({
       username,
       email,
+      roles: [0],
       authentication: {
         salt,
         password: hasher(salt, password),
@@ -69,8 +74,13 @@ export const register = async (req: Request, res: Response) => {
     user.authentication.refreshToken = refreshToken;
     await user.save();
 
+    res.clearCookie("refreshToken", myCookieOptions)
 
-    return res.status(200).json({ id: user._id, username: user.username, email: user.email, accessToken, refreshToken });
+    return res
+      .status(201)
+      .cookie("refreshToken", refreshToken, myCookieOptions)
+      .json({ id: user._id, username: user.username, email: user.email, roles: user.roles, accessToken })
+
   } catch (error) {
     console.log(error);
     return res.status(500).send(`Error -> ${error.message}`);
@@ -79,14 +89,23 @@ export const register = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    const identity: User = get(req, "identity")
+    const { refreshToken } = req.cookies;
 
-    const user = await getUserById(identity._id)
+    const id = getIdFromRefreshToken(refreshToken)
+
+    if (!id) {
+      return res.status(400).send("Invalid signature of refresh Token")
+    }
+
+    const user = await getUserById(id)
 
     user.authentication.refreshToken = "";
     user.save();
 
-    return res.status(200).send("Logged out successfully")
+    return res
+      .status(200)
+      .clearCookie("refreshToken", myCookieOptions)
+      .send("Logged out successfully")
   } catch (error) {
     return res.status(500).send(error.message)
   }
@@ -94,18 +113,15 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getNewAccessToken = async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.cookies;
 
-    const decoded: JWTData = verifyJWT(refreshToken)
+    const id = getIdFromRefreshToken(refreshToken)
 
-    if (!decoded) {
+    if (!id) {
       return res.status(400).send("Invalid signature of refresh Token")
     }
 
-    const decryptedId = decryptData(decoded.sub);
-    console.log(decryptedId)
-
-    const user = await getUserById(decryptedId).select('+authentication.refreshToken');
+    const user = await getUserById(id).select('+authentication.refreshToken');
 
     if (user.authentication.refreshToken !== refreshToken) {
       return res.status(400).send("Invalid refresh token");
@@ -117,7 +133,12 @@ export const getNewAccessToken = async (req: Request, res: Response) => {
     user.authentication.refreshToken = newRefreshToken;
     await user.save();
 
-    return res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken })
+    res.clearCookie("refreshToken", myCookieOptions)
+
+    return res
+      .status(200)
+      .cookie("refreshToken", newRefreshToken, myCookieOptions)
+      .json({ id: user._id, username: user.username, email: user.email, roles: user.roles, accessToken: newAccessToken })
   } catch (error) {
     return res.status(500).send(error.message)
   }

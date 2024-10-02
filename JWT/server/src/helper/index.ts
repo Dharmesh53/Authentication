@@ -1,5 +1,13 @@
 import { timingSafeEqual, createHmac, randomBytes, createCipheriv, createDecipheriv } from "node:crypto";
 
+export const myCookieOptions = {
+  domain: "localhost",
+  path: "/",
+  httpOnly: true,
+  sameSite: "lax" as "lax",
+  secure: process.env.NODE_ENV === "production",
+}
+
 export const random = (length: number) => randomBytes(length).toString("hex");
 
 export const timeSafeEqual = (a: string, b: string) => {

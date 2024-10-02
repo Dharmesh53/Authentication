@@ -1,7 +1,7 @@
 import { privateKey, publicKey } from "helper/keyPairs";
 import jwt from "jsonwebtoken";
 import { JWTData } from "types"
-import { encryptData } from "helper";
+import { encryptData, decryptData } from "helper";
 
 export const generateAccessToken = (user: Record<string, any>, exp: string) => {
 
@@ -47,3 +47,17 @@ export const verifyJWT = (token: string) => {
     return null
   }
 };
+
+export const getIdFromRefreshToken = (refreshToken: string) => {
+
+  const decoded: JWTData = verifyJWT(refreshToken)
+
+  if (!decoded) {
+    return null
+  }
+
+  const decryptedId = decryptData(decoded.sub);
+
+  return decryptedId
+}
+
