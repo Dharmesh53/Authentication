@@ -2,11 +2,12 @@ import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
+import useToggle from "../hooks/useToggle";
 
 const LoginURL = '/auth/login';
 
 const Login = () => {
-  const { data, setData, errorMsg, setErrorMsg, navigate, location, setAuth, persist, setPersist } = useLoginStates()
+  const { data, setData, errorMsg, setErrorMsg, navigate, location, setAuth, check, toggleCheck } = useLoginStates()
 
   const from = location.state?.from?.pathname || "/"
 
@@ -41,13 +42,6 @@ const Login = () => {
     }
   }, [data, setErrorMsg]);
 
-  const togglePersist = () => {
-    setPersist(prev => prev === "false" ? "true" : "false")
-  }
-
-  useEffect(() => {
-    localStorage.setItem("persist", persist)
-  }, [persist])
 
   return (
     <section>
@@ -77,8 +71,8 @@ const Login = () => {
           <input
             type="checkbox"
             id="persist"
-            onChange={togglePersist}
-            checked={persist === "true" ? true : false}
+            onChange={toggleCheck}
+            checked={check}
           />
           <label htmlFor="persist">Trust This Device</label>
         </div>
@@ -103,9 +97,11 @@ const useLoginStates = () => {
 
   const location = useLocation();
 
-  const { setAuth, persist, setPersist } = useAuth();
+  const { setAuth } = useAuth();
 
-  return { data, setData, errorMsg, setErrorMsg, navigate, location, setAuth, persist, setPersist }
+  const [check, toggleCheck] = useToggle("persist", false);
+
+  return { data, setData, errorMsg, setErrorMsg, navigate, location, setAuth, check, toggleCheck }
 }
 
 export default Login

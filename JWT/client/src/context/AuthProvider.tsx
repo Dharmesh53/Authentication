@@ -3,30 +3,21 @@ import { AuthType } from "../types";
 
 const AuthContext = createContext<AuthContextType>({
   auth: null, setAuth: () => { },
-  persist: "", setPersist: () => { }
 });
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [auth, setAuth] = useState<AuthType | null>(null);
 
-  const [persist, setPersist] = useState<string>(() => {
-    const storedPersist = localStorage.getItem("persist");
-    return storedPersist ? JSON.parse(storedPersist) : "false";
-  });
-
   return (
-    <AuthContext.Provider value={{ auth, setAuth, persist, setPersist }}>
+    <AuthContext.Provider value={{ auth, setAuth }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-
 export interface AuthContextType {
   auth: AuthType | null;
   setAuth: Dispatch<SetStateAction<AuthType | null>>;
-  persist: string;
-  setPersist: Dispatch<SetStateAction<string>>;
 }
 
 export interface AuthProviderProps {

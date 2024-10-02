@@ -8,8 +8,14 @@ import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
 import router from "./router";
+import rateLimit from "express-rate-limit";
 
 import { notFoundHandler, errorHandler } from "middlewares/error.middleware";
+
+const limiter = rateLimit({
+  windowMs: 1000,
+  max: 6
+})
 
 const app = express();
 
@@ -20,6 +26,8 @@ app.use(
   }),
 );
 app.use(helmet());
+
+app.use(limiter)
 
 app.use(morgan("dev"));
 
