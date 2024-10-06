@@ -19,9 +19,11 @@ export const LoginButton = ({
     router.push("/auth/login")
   }
 
+  // TODO: implement modal
   if (mode === "modal") {
     return (
-      <span>TODO: implement modal</span>
+      <span>
+      </span>
     )
   }
 
