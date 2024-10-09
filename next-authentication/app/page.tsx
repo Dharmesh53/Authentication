@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LoginButton } from "@/components/auth/login-button";
 
 const font = Poppins({
-  subsets: ['latin'], weight: ['600']
+  subsets: ['latin'], weight: ['500']
 })
 
 export default function Home() {
@@ -14,7 +14,7 @@ export default function Home() {
         <h1 className={"text-6xl font-semibold text-white drop-shadow-sm"}>🔐 Auth Service</h1>
         <p className="text-white text-lg">A small step towards mind fuck</p>
         <div>
-          <LoginButton>
+          <LoginButton mode="modal" asChild>
             <Button size={"lg"} variant={"secondary"}>Sign In</Button>
           </LoginButton>
         </div>
